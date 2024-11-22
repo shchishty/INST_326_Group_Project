@@ -26,8 +26,18 @@ class Caregiver:
         for day, shifts in self.availability.items():
             print(f"{day}: AM - {shifts['AM']}, PM - {shifts['PM']}")
 
+    class PaidCaregiver(Caregiver):
+    def __init__(self, name, phone, email, pay_rate=0.0, hours=0):
+        super().__init__(name, phone, email, hours)
+        self.pay_rate = pay_rate
+
     def calculate_weekly_pay(self):
         return self.hours * self.pay_rate
+
+    class FamilyCaregiver(Caregiver):
+        def calculate_weekly_pay(self):
+            return 0  # Family caregivers are not paid
+
 class Manager:
     def __init__(self):
         self.caregivers = []
