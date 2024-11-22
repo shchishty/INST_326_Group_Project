@@ -26,7 +26,7 @@ class Caregiver:
         for day, shifts in self.availability.items():
             print(f"{day}: AM - {shifts['AM']}, PM - {shifts['PM']}")
 
-    class PaidCaregiver(Caregiver):
+class PaidCaregiver(Caregiver):
     def __init__(self, name, phone, email, pay_rate=0.0, hours=0):
         super().__init__(name, phone, email, hours)
         self.pay_rate = pay_rate
@@ -34,9 +34,39 @@ class Caregiver:
     def calculate_weekly_pay(self):
         return self.hours * self.pay_rate
 
-    class FamilyCaregiver(Caregiver):
+class FamilyCaregiver(Caregiver):
         def calculate_weekly_pay(self):
             return 0  # Family caregivers are not paid
+
+class Schedule
+    def __init__(self, year, month):
+        self.year = year
+        self.month = month
+        self.schedule = {day: {'AM': None, 'PM', None} for day in range(1, calendar.monthrange(year, month)[1] + 1)}
+
+    def assign_caregiver(self, day, shift, caregiver):
+        if day in self.schedule and shift in self.schedule[day]:
+            self.schedule[day][shift] = caregiver.name
+
+    # HTML calendar
+
+    def generate_html_calendar(self):
+        """Generate an HTML calendar for caregiver's schedules."""
+        html_calendar = calendar.HTMLCalendar()
+        calendar = html_calendar.formatmonth(self.year, self.month)
+
+    # this is to make sure it includes caregiver assignments
+
+        for day, shifts in self.schedule.items():
+            if shifts['AM'] or shifts['PM']:
+                shift_info = f"<br>AM: {shifts['AM'] or 'None')<br>PM: {shifts['PM'] or 'None'}"
+                calendar = calendar.replace(f">{day}<", f">{day}{shift_info}<")
+    
+    # this will save it into a file
+
+        with open ("care_schedule.html", "w") as file:
+            file.write(calendar)
+        print("Care schedule saved to 'care_schedule.html'")
 
 class Manager:
     def __init__(self):
