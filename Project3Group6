@@ -1,5 +1,8 @@
+import calendar
+import random
+
 class Caregiver:
-    def __init__(self, name, phone, email, pay_rate, hours=0):
+    def __init__(self, name, phone, email, pay_rate=0.0, hours=0):
         self.name = name
         self.phone = phone
         self.email = email
@@ -7,8 +10,17 @@ class Caregiver:
         self.hours = hours
         self.availability = {day: {'AM': 'available', 'PM': 'available'} for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]}
     def set_availability(self, day, shift, status):
+        """Override availability for a specific date."""
         if day in self.availability and shift in self.availability[day]:
-            self.availability[day][shift] = status
+            if status in ['available', 'unavailable']:
+                self.availability[day][shift] = status
+
+    def get_availability(self, day, shift, date=None):
+        """Get availability for a specific day/shift, considering exceptions."""
+        if date and date in self.exceptions and shift in self.exceptions[date]:
+            return self.exceptions[date][shift]
+        return self.availability[day][shift]
+
     def display_availability(self):
         print(f"Availability for caregiver: {self.name}:")
         for day, shifts in self.availability.items():
@@ -28,11 +40,22 @@ class Manager:
         for caregiver in self.caregivers:
             print(f"Name: {caregiver.name}, Phone: {caregiver.phone}, Email: {caregiver.email}, "
                   f"Pay Rate: {caregiver.pay_rate}, Hours: {caregiver.hours}")
+
     def display_schedules(self):
         for caregiver in self.caregivers:
             caregiver.display_availability()
 
- def generate_pay_report(self):
+    def auto_schedule(self, schedule):
+        """Automatically assign caregivers to all shifts."""
+        for date in schedule.schedule.keys():
+            day_name = calendar.day_name[datetime(schedule.year, schedule.month, date).weekday()]
+            for shift in ['AM', 'PM']:
+                for caregiver in self.caregivers:
+                    if caregiver.get_availability(day_name, shift, date)
+                        schedule.assign_caregiver(date, shift, caregiver)
+                        break
+
+    def generate_pay_report(self):
         total_weekly_pay = 0
         total_monthly_pay = 0
         report_lines = ["Pay Report:"]
@@ -48,22 +71,56 @@ class Manager:
         report_lines.append(f"Total Monthly Pay: ${total_monthly_pay:.2f}")
         
         # Write the report to a text file
-        with open("pay_report.txt", "w") as file:
-            file.write("\n".join(report_lines))
+    with open("pay_report.txt", "w") as file:
+        file.write("\n".join(report_lines))
         print("\n".join(report_lines))
         print("\nPay report saved to 'pay_report.txt'")
-    #example usage
+
+# example usage
+
 if __name__ == "__main__":
+
+    # employee details
+
     mary = Caregiver("Mary", "240-675-3880", "maryhadalamb@gmail.com", 20.0, 35)
     jenn = Caregiver("Jenn", "301-274-8921", "jenniferrocks@yahoo.com", 20.0, 30)
+    manny = Caregiver("Manny", "202-271-2202", "handymanny@gmail.com", 20.0, 40)
+    jj = Caregiver("JJ", "410-201-5690", "jjlondon@gmail.com", 20.0, 30)
+    saina = Caregiver("Saina", "240-481-2203", "sainamohamed@gmail.com", 20.0, 40)
+    tamara = Caregiver("Tamara", "301-123-4567", "tamarasimmons@gmail.com", 0.0, 20)  # Family caregiver
+    sue = Caregiver("Sue", "240-254-2778", "suesimmons@gmail.com", 0.0, 25)  # Family caregiver
+    cairo = Caregiver("Cairo", "240-757-3000", "cairosimmons@gmail.com", 0.0, 20) # Family caregiver
+
+    # setting availability for employees
+
     mary.set_availability(4, 'AM', 'available') 
     mary.set_availability(4, 'PM', 'unavailable')  
     jenn.set_availability(2, 'AM', 'unavailable')  
     jenn.set_availability(1, 'PM', 'available')
+    manny.set_availability(2, 'AM', 'available')
+    manny.set_availability(4, 'PM', 'available')
+    jj.set_availability(1, 'PM', 'unavailable')
+    jj.set_availability(1, 'AM', 'available')
+    saina.set_availability(2, 'AM', 'available')
+    saina.set_availability(3, 'PM', 'available')
+    tamara.set_availability(3, 'AM', 'available')
+    tamara.set_availability(5, 'AM', 'unavailable')
+    sue.set_availability(4, 'AM', 'available')
+    sue.set_availability(3, 'PM', 'unavailable')
+    cairo.set_availability(5, 'AM', 'available')
+    cairo.set_availability(4, 'PM', 'available')
+    
+    # adds caregivers
 
     manager = Manager()
     manager.add_caregiver(mary)
     manager.add_caregiver(jenn)
+    manager.add_caregiver(manny)
+    manager.add_caregiver(jj)
+    manager.add_caregiver(saina)
+    manager.add_caregiver(tamara)
+    manager.add_caregiver(sue)
+    manager.add_caregiver(cairo)
     
     manager.display_all_caregivers()
     print("\nSchedules:")
