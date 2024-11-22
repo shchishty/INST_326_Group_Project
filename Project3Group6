@@ -9,6 +9,12 @@ class Caregiver:
         self.pay_rate = pay_rate
         self.hours = hours
         self.availability = {day: {'AM': 'available', 'PM': 'available'} for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]}
+        self.exceptions = {}
+
+    def calculate_weekly_pay(self):
+        """Placeholder method to calculate weekly pay. Must be overridden in subclasses."""
+        raise NotImplementedError("Subclasses must implement this method.")
+
     def set_availability(self, day, shift, status):
         """Override availability for a specific date."""
         if day in self.availability and shift in self.availability[day]:
@@ -38,34 +44,34 @@ class FamilyCaregiver(Caregiver):
         def calculate_weekly_pay(self):
             return 0  # Family caregivers are not paid
 
-class Schedule
+class Schedule:
     def __init__(self, year, month):
         self.year = year
         self.month = month
-        self.schedule = {day: {'AM': None, 'PM', None} for day in range(1, calendar.monthrange(year, month)[1] + 1)}
+        self.schedule = {day: {'AM': None, 'PM': None} for day in range(1, calendar.monthrange(year, month)[1] + 1)}
 
     def assign_caregiver(self, day, shift, caregiver):
         if day in self.schedule and shift in self.schedule[day]:
             self.schedule[day][shift] = caregiver.name
 
-    # HTML calendar
+    # HTML calendar setup
 
     def generate_html_calendar(self):
         """Generate an HTML calendar for caregiver's schedules."""
         html_calendar = calendar.HTMLCalendar()
-        calendar = html_calendar.formatmonth(self.year, self.month)
+        calendar_html = html_calendar.formatmonth(self.year, self.month)
 
     # this is to make sure it includes caregiver assignments
 
         for day, shifts in self.schedule.items():
             if shifts['AM'] or shifts['PM']:
-                shift_info = f"<br>AM: {shifts['AM'] or 'None')<br>PM: {shifts['PM'] or 'None'}"
-                calendar = calendar.replace(f">{day}<", f">{day}{shift_info}<")
+                shift_info = f"<br>AM: {shifts['AM'] or 'None'}<br>PM: {shifts['PM'] or 'None'}"
+                calendar_html = calendar.replace(f">{day}<", f">{day}{shift_info}<")
     
     # this will save it into a file
 
         with open ("care_schedule.html", "w") as file:
-            file.write(calendar)
+            file.write(calendar_html)
         print("Care schedule saved to 'care_schedule.html'")
 
 class Manager:
@@ -87,17 +93,22 @@ class Manager:
 
     def auto_schedule(self, schedule):
         """Automatically assign caregivers to all shifts."""
-        for date in schedule.schedule.keys():
+        caregiver_queue = self.caregivers[:]
+
+       for date in schedule.schedule.keys():
             day_name = calendar.day_name[datetime(schedule.year, schedule.month, date).weekday()]
             for shift in ['AM', 'PM']:
-                for caregiver in self.caregivers:
-                    if caregiver.get_availability(day_name, shift, date)
+                for _ in range(len(caregiver_queue)):  # this ensures fairness in scheduling
+                    caregiver = caregiver_queue.pop(0)  # takes the first caregiver
+                    if caregiver.get_availability(day_name, shift, date):
                         schedule.assign_caregiver(date, shift, caregiver)
+                        caregiver_queue.append(caregiver)  # rotate caregiver to the back of the queue
                         break
+                    caregiver_queue.append(caregiver)  # rotate caregiver to the back of the queue
 
-    def generate_pay_report(self):
-        total_weekly_pay = 0
-        total_monthly_pay = 0
+        def generate_pay_report(self):
+        total_weekly_pay = 800
+        total_monthly_pay = 3200
         report_lines = ["Pay Report:"]
         for caregiver in self.caregivers:
             weekly_pay = caregiver.calculate_weekly_pay()
@@ -111,8 +122,9 @@ class Manager:
         report_lines.append(f"Total Monthly Pay: ${total_monthly_pay:.2f}")
         
         # Write the report to a text file
-    with open("pay_report.txt", "w") as file:
-        file.write("\n".join(report_lines))
+        with open("pay_report.txt", "w") as file:
+            file.write("\n".join(report_lines))
+        
         print("\n".join(report_lines))
         print("\nPay report saved to 'pay_report.txt'")
 
@@ -124,11 +136,7 @@ if __name__ == "__main__":
 
     mary = Caregiver("Mary", "240-675-3880", "maryhadalamb@gmail.com", 20.0, 35)
     jenn = Caregiver("Jenn", "301-274-8921", "jenniferrocks@yahoo.com", 20.0, 30)
-    manny = Caregiver("Manny", "202-271-2202", "handymanny@gmail.com", 20.0, 40)
-    jj = Caregiver("JJ", "410-201-5690", "jjlondon@gmail.com", 20.0, 30)
-    saina = Caregiver("Saina", "240-481-2203", "sainamohamed@gmail.com", 20.0, 40)
     tamara = Caregiver("Tamara", "301-123-4567", "tamarasimmons@gmail.com", 0.0, 20)  # Family caregiver
-    sue = Caregiver("Sue", "240-254-2778", "suesimmons@gmail.com", 0.0, 25)  # Family caregiver
     cairo = Caregiver("Cairo", "240-757-3000", "cairosimmons@gmail.com", 0.0, 20) # Family caregiver
 
     # setting availability for employees
@@ -137,16 +145,8 @@ if __name__ == "__main__":
     mary.set_availability(4, 'PM', 'unavailable')  
     jenn.set_availability(2, 'AM', 'unavailable')  
     jenn.set_availability(1, 'PM', 'available')
-    manny.set_availability(2, 'AM', 'available')
-    manny.set_availability(4, 'PM', 'available')
-    jj.set_availability(1, 'PM', 'unavailable')
-    jj.set_availability(1, 'AM', 'available')
-    saina.set_availability(2, 'AM', 'available')
-    saina.set_availability(3, 'PM', 'available')
     tamara.set_availability(3, 'AM', 'available')
     tamara.set_availability(5, 'AM', 'unavailable')
-    sue.set_availability(4, 'AM', 'available')
-    sue.set_availability(3, 'PM', 'unavailable')
     cairo.set_availability(5, 'AM', 'available')
     cairo.set_availability(4, 'PM', 'available')
     
@@ -155,16 +155,27 @@ if __name__ == "__main__":
     manager = Manager()
     manager.add_caregiver(mary)
     manager.add_caregiver(jenn)
-    manager.add_caregiver(manny)
-    manager.add_caregiver(jj)
-    manager.add_caregiver(saina)
     manager.add_caregiver(tamara)
     manager.add_caregiver(sue)
     manager.add_caregiver(cairo)
     
+    # Displays caregivers and schedule
+    
     manager.display_all_caregivers()
     print("\nSchedules:")
     manager.display_schedules()
+
+    # Creating and auto-scheduling
+
+    schedule = Schedule(2024, 11)
+    manager.auto_schedule(schedule)
+
+    # Generating the HTML schedule
+
+    print("\nGenerating HTML schedule...")
+    schedule.generate_html_calendar()
+
+    # Generating the pay report
 
     print("\nGenerating Pay Report:")
     manager.generate_pay_report()
