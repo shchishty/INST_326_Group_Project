@@ -95,10 +95,10 @@ class Manager:
         """Automatically assign caregivers to all shifts."""
         caregiver_queue = self.caregivers[:]
 
-       for date in schedule.schedule.keys():
+for date in schedule.schedule.keys():
             day_name = calendar.day_name[datetime(schedule.year, schedule.month, date).weekday()]
             for shift in ['AM', 'PM']:
-                for _ in range(len(caregiver_queue)):  # this ensures fairness in scheduling
+                for _ in range(len(caregiver_queue)):  # this ensures fairness
                     caregiver = caregiver_queue.pop(0)  # takes the first caregiver
                     if caregiver.get_availability(day_name, shift, date):
                         schedule.assign_caregiver(date, shift, caregiver)
